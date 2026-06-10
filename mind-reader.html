@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en" class=""><head>
+
+  <meta charset="UTF-8">
+  <title>CodePen Demo</title>
+
+  <meta name="robots" content="noindex">
+
+  <link rel="shortcut icon" type="image/x-icon" href="https://cpwebassets.codepen.io/assets/favicon/favicon-aec34940fbc1a6e787974dcd360f2c6b63348d4b1f4e06c77743096d55480f33.ico">
+  <link rel="mask-icon" href="https://cpwebassets.codepen.io/assets/favicon/logo-pin-b4b4269c16397ad2f0f7a01bcdf513a1994f4c94b8af2f191c09eb0d601762b1.svg" color="#111">
+  <link rel="canonical" href="https://codepen.io/pen/">
+
+  
+  
+
+  <style id="INLINE_PEN_STYLESHEET_ID">
+    
+  </style>
+
+  
+<script src="https://cpwebassets.codepen.io/assets/common/stopExecutionOnTimeout-f07739098a39bd4e74ddd974652dac904146f33fdc1ecab356e8c809a05faccb.js"></script>
+<script src="https://cpwebassets.codepen.io/assets/editor/iframe/iframeConsoleRunner-100b2a29d7a68d0f5c9eb0b3f9e63783410ea00dcab106def20a0ab3cf4a8804.js"></script>
+<script src="https://cpwebassets.codepen.io/assets/editor/iframe/iframeRuntimeErrors-4f205f2c14e769b448bcf477de2938c681660d5038bc464e3700256713ebe261.js"></script>
+</head>
+
+<body>
+  
+
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MIND READER — Neon Number Hunt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Audiowide&amp;family=Press+Start+2P&amp;family=VT323&amp;display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#050014;
+    --panel:#0c0228;
+    --panel-2:#150538;
+    --line:#2a0a5c;
+    --cyan:#00fff7;
+    --magenta:#ff2dd5;
+    --lime:#b7ff00;
+    --pink:#ff2e74;
+    --gold:#ffcc00;
+    --ice:#7ad7ff;
+    --text:#e9e6ff;
+    --muted:#8a82c9;
+    --danger:#ff3a5a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow-x:hidden}
+  body{
+    font-family:'VT323', ui-monospace, monospace;
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(255,45,213,.18), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, rgba(0,255,247,.16), transparent 60%),
+      var(--bg);
+    color:var(--text);
+    min-height:100vh;
+    position:relative;
+    letter-spacing:.5px;
+  }
+  /* Animated grid floor */
+  body::before{
+    content:"";position:fixed;inset:0;
+    background-image:
+      linear-gradient(rgba(0,255,247,.08) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,45,213,.08) 1px, transparent 1px);
+    background-size: 60px 60px, 60px 60px;
+    mask-image: linear-gradient(to bottom, transparent 0%, black 30%, black 70%, transparent 100%);
+    pointer-events:none;
+    z-index:0;
+    animation: gridDrift 20s linear infinite;
+  }
+  @keyframes gridDrift{ from{background-position:0 0,0 0} to{background-position:0 60px,60px 0} }
+  /* Scanline overlay */
+  body::after{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:2;
+    background: repeating-linear-gradient(to bottom, rgba(255,255,255,.025) 0px, rgba(255,255,255,.025) 1px, transparent 2px, transparent 4px);
+    mix-blend-mode:overlay;
+  }
+  .app{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:24px 20px 60px;}
+
+  header.bar{
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding:14px 18px;border:1px solid var(--line);
+    background:linear-gradient(180deg, rgba(20,5,56,.85), rgba(8,1,20,.85));
+    border-radius:14px;
+    box-shadow: 0 0 0 1px rgba(0,255,247,.08) inset, 0 10px 40px rgba(255,45,213,.08);
+  }
+  .logo{
+    font-family:'Audiowide', sans-serif;
+    font-size:22px;letter-spacing:3px;
+    background: linear-gradient(90deg, var(--cyan), var(--magenta));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    text-shadow: 0 0 18px rgba(0,255,247,.35);
+  }
+  .logo small{display:block;font-family:'Press Start 2P', monospace;font-size:8px;color:var(--muted);letter-spacing:2px;margin-top:4px}
+  .stats{display:flex;gap:14px;flex-wrap:wrap}
+  .stat{
+    border:1px solid var(--line);background:rgba(10,2,30,.7);
+    padding:8px 12px;border-radius:10px;min-width:90px;
+  }
+  .stat .k{font-family:'Press Start 2P', monospace;font-size:8px;color:var(--muted);letter-spacing:1.5px}
+  .stat .v{font-size:24px;line-height:1;color:var(--cyan);text-shadow:0 0 10px rgba(0,255,247,.4);margin-top:4px}
+  .stat.v-gold .v{color:var(--gold);text-shadow:0 0 10px rgba(255,204,0,.4)}
+  .stat.v-pink .v{color:var(--pink);text-shadow:0 0 10px rgba(255,46,116,.4)}
+
+  main{margin-top:22px;display:grid;gap:18px}
+
+  .panel{
+    border:1px solid var(--line);
+    background:linear-gradient(180deg, rgba(21,5,56,.7), rgba(12,2,40,.85));
+    border-radius:16px;padding:22px;
+    box-shadow: 0 0 0 1px rgba(255,45,213,.05) inset, 0 12px 60px rgba(0,0,0,.45);
+  }
+
+  /* HOME SCREEN */
+  .home{display:grid;place-items:center;gap:18px;padding:40px 22px;text-align:center}
+  .home h1{
+    font-family:'Audiowide', sans-serif;
+    font-size: clamp(38px, 8vw, 84px);
+    letter-spacing:6px;line-height:1;
+    background: linear-gradient(90deg, var(--cyan) 0%, var(--magenta) 50%, var(--lime) 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    text-shadow: 0 0 30px rgba(0,255,247,.25);
+    animation: hueShift 8s linear infinite;
+  }
+  @keyframes hueShift{ 0%,100%{filter:hue-rotate(0)} 50%{filter:hue-rotate(40deg)} }
+  .home p.tag{font-size:22px;color:var(--ice);max-width:640px;text-shadow:0 0 12px rgba(122,215,255,.25)}
+  .home .ctas{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:8px}
+
+  button, .btn{
+    font-family:'Press Start 2P', monospace;
+    font-size:11px;letter-spacing:2px;
+    background:transparent;color:var(--cyan);
+    border:2px solid var(--cyan);
+    padding:14px 18px;border-radius:8px;cursor:pointer;
+    transition: transform .12s ease, background-color .15s ease, color .15s ease, box-shadow .15s ease, border-color .15s ease;
+    text-transform:uppercase;
+    box-shadow: 0 0 0 rgba(0,255,247,0);
+  }
+  button:hover, .btn:hover{transform:translateY(-2px);background:rgba(0,255,247,.08);box-shadow:0 0 24px rgba(0,255,247,.35)}
+  button:active{transform:translateY(0)}
+  button:disabled{opacity:.35;cursor:not-allowed;transform:none;box-shadow:none}
+  button.magenta{color:var(--magenta);border-color:var(--magenta)}
+  button.magenta:hover{background:rgba(255,45,213,.08);box-shadow:0 0 24px rgba(255,45,213,.35)}
+  button.lime{color:var(--lime);border-color:var(--lime)}
+  button.lime:hover{background:rgba(183,255,0,.08);box-shadow:0 0 24px rgba(183,255,0,.35)}
+  button.gold{color:var(--gold);border-color:var(--gold)}
+  button.gold:hover{background:rgba(255,204,0,.08);box-shadow:0 0 24px rgba(255,204,0,.35)}
+  button.danger{color:var(--danger);border-color:var(--danger)}
+  button.danger:hover{background:rgba(255,58,90,.08);box-shadow:0 0 24px rgba(255,58,90,.35)}
+  button.solid{background:var(--cyan);color:#04122b}
+  button.solid:hover{background:#5cfffb;box-shadow:0 0 28px rgba(0,255,247,.55)}
+
+  /* LEVEL HEADER */
+  .levelHead{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:flex-start}
+  .levelTitle{font-family:'Audiowide';font-size:30px;letter-spacing:3px;color:var(--text)}
+  .levelTitle .num{color:var(--magenta);text-shadow:0 0 12px rgba(255,45,213,.5)}
+  .difficulty{
+    display:inline-block;padding:6px 10px;border-radius:6px;
+    font-family:'Press Start 2P', monospace;font-size:9px;letter-spacing:2px;
+    border:1px solid var(--line);
+  }
+  .difficulty.NORMAL{color:var(--ice);border-color:#1f3a6b;background:rgba(122,215,255,.06)}
+  .difficulty.HARD{color:#ffb86b;border-color:#7a4516;background:rgba(255,184,107,.08)}
+  .difficulty.INSANE{color:var(--pink);border-color:#7a1b3a;background:rgba(255,46,116,.08)}
+  .difficulty.GODLY{color:var(--gold);border-color:#7a5f00;background:rgba(255,204,0,.08)}
+  .difficulty.DEMON{color:var(--danger);border-color:#7a1626;background:rgba(255,58,90,.10);animation:demonPulse 1.4s ease-in-out infinite}
+  .difficulty.ALLSEEING{
+    color:#fff;border-color:#5a2a8a;
+    background:linear-gradient(90deg, rgba(255,45,213,.15), rgba(0,255,247,.15));
+    animation:allSeeingShift 2s linear infinite;
+  }
+  @keyframes demonPulse{50%{box-shadow:0 0 22px rgba(255,58,90,.55)}}
+  @keyframes allSeeingShift{0%{filter:hue-rotate(0)}100%{filter:hue-rotate(360deg)}}
+
+  /* RANGE / HUD */
+  .hud{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:18px}
+  .hud .cell{
+    border:1px solid var(--line);background:rgba(8,1,28,.7);
+    border-radius:12px;padding:12px 14px;text-align:center;
+  }
+  .hud .label{font-family:'Press Start 2P', monospace;font-size:8px;color:var(--muted);letter-spacing:1.5px}
+  .hud .value{font-size:30px;line-height:1;margin-top:6px;color:var(--cyan);text-shadow:0 0 12px rgba(0,255,247,.4)}
+  .hud .cell.guesses .value{color:var(--lime);text-shadow:0 0 12px rgba(183,255,0,.4)}
+  .hud .cell.timer .value{color:var(--gold);text-shadow:0 0 12px rgba(255,204,0,.45)}
+  .hud .cell.timer.frozen .value{color:var(--ice);text-shadow:0 0 16px rgba(122,215,255,.7)}
+  .hud .cell.timer.danger .value{color:var(--danger);text-shadow:0 0 18px rgba(255,58,90,.6);animation:flash 1s infinite}
+  .hud .cell.points .value{color:var(--magenta);text-shadow:0 0 12px rgba(255,45,213,.5)}
+  @keyframes flash{50%{opacity:.55}}
+
+  /* RANGE BAR */
+  .rangeWrap{margin-top:18px}
+  .rangeBar{
+    position:relative;height:54px;border-radius:10px;
+    background:linear-gradient(90deg, rgba(0,255,247,.15), rgba(255,45,213,.18));
+    border:1px solid var(--line);overflow:hidden;
+  }
+  .rangeBar .min,.rangeBar .max{
+    position:absolute;top:0;bottom:0;display:flex;align-items:center;padding:0 14px;
+    font-size:26px;color:#fff;text-shadow:0 0 8px rgba(255,255,255,.4);
+  }
+  .rangeBar .min{left:0}
+  .rangeBar .max{right:0}
+  .rangeBar .label{
+    position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    font-family:'Press Start 2P', monospace;font-size:9px;color:var(--muted);letter-spacing:2px
+  }
+  .rangeMeta{font-size:18px;color:var(--muted);margin-top:6px;text-align:center}
+
+  /* GUESS INPUT */
+  .guessRow{display:flex;gap:12px;margin-top:18px;align-items:center;flex-wrap:wrap}
+  input[type="number"]{
+    flex:1;min-width:200px;
+    font-family:'VT323', monospace;font-size:36px;color:var(--cyan);
+    background:#04001a;border:2px solid var(--cyan);border-radius:10px;padding:10px 16px;
+    box-shadow:0 0 24px rgba(0,255,247,.18) inset;outline:none;letter-spacing:2px;
+    caret-color:var(--cyan);
+  }
+  input[type="number"]:focus{box-shadow:0 0 0 2px var(--magenta), 0 0 24px rgba(255,45,213,.35) inset;border-color:var(--magenta);color:var(--magenta)}
+  input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  input[type=number]{-moz-appearance:textfield}
+
+  /* HINT */
+  .hint{
+    margin-top:18px;padding:14px 18px;border-radius:12px;
+    border:1px solid var(--line);background:rgba(10,2,32,.7);
+    display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;
+  }
+  .hintTier{font-family:'Press Start 2P', monospace;font-size:12px;letter-spacing:2px}
+  .hintMsg{font-size:20px;color:var(--text)}
+  .hintTier.BURNING{color:#ff2d2d;text-shadow:0 0 18px #ff2d2d}
+  .hintTier.SCORCHING{color:#ff6b00;text-shadow:0 0 16px #ff6b00}
+  .hintTier.HOT{color:#ffa600;text-shadow:0 0 14px #ffa600}
+  .hintTier.WARM{color:var(--gold);text-shadow:0 0 12px var(--gold)}
+  .hintTier.COOL{color:#7af5ff;text-shadow:0 0 12px #7af5ff}
+  .hintTier.COLD{color:#4aa9ff;text-shadow:0 0 14px #4aa9ff}
+  .hintTier.FREEZING{color:#bcd9ff;text-shadow:0 0 16px #bcd9ff}
+  .hintTier.IDLE{color:var(--muted)}
+
+  /* HISTORY */
+  .history{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap}
+  .chip{
+    border:1px solid var(--line);background:rgba(12,2,38,.7);
+    padding:6px 10px;border-radius:999px;font-size:18px;color:var(--text)
+  }
+  .chip .arrow{margin-left:6px;font-family:'Press Start 2P', monospace;font-size:9px}
+  .chip .arrow.up{color:var(--lime)}
+  .chip .arrow.down{color:var(--pink)}
+
+  /* POWERUPS */
+  .powBar{margin-top:18px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+  .pow{
+    position:relative;border:1px solid var(--line);background:rgba(8,1,28,.7);
+    border-radius:12px;padding:10px;cursor:pointer;text-align:center;
+    transition: transform .12s ease, box-shadow .15s ease, border-color .15s ease;
+  }
+  .pow:hover{transform:translateY(-2px);border-color:var(--cyan);box-shadow:0 0 22px rgba(0,255,247,.25)}
+  .pow.locked{opacity:.35;cursor:not-allowed}
+  .pow.restricted{opacity:.4;cursor:not-allowed;border-color:#6b1a1a;background:repeating-linear-gradient(45deg, rgba(255,58,90,.08) 0 8px, transparent 8px 16px)}
+  .pow .icon{font-size:30px;line-height:1}
+  .pow .name{font-family:'Press Start 2P', monospace;font-size:8px;letter-spacing:1.5px;color:var(--text);margin-top:6px;min-height:22px}
+  .pow .count{
+    position:absolute;top:6px;right:8px;
+    font-family:'Press Start 2P', monospace;font-size:9px;color:var(--gold);
+  }
+  .pow .badge{
+    position:absolute;top:6px;left:8px;
+    font-family:'Press Start 2P', monospace;font-size:7px;color:var(--danger);
+  }
+  .pow.sliced .icon{color:var(--cyan);text-shadow:0 0 10px var(--cyan)}
+  .pow.fact .icon{color:var(--lime);text-shadow:0 0 10px var(--lime)}
+  .pow.extra .icon{color:var(--gold);text-shadow:0 0 10px var(--gold)}
+  .pow.doubler .icon{color:var(--magenta);text-shadow:0 0 10px var(--magenta)}
+  .pow.freeze .icon{color:var(--ice);text-shadow:0 0 10px var(--ice)}
+
+  /* MODAL */
+  .modalWrap{
+    position:fixed;inset:0;background:rgba(2,0,12,.78);z-index:30;
+    display:none;align-items:center;justify-content:center;padding:20px;
+    backdrop-filter: blur(8px);
+  }
+  .modalWrap.show{display:flex;animation:fadeIn .25s ease}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  .modal{
+    max-width:560px;width:100%;
+    border:1px solid var(--line);
+    background:linear-gradient(180deg, rgba(25,7,68,.96), rgba(12,2,40,.96));
+    border-radius:18px;padding:28px;
+    box-shadow:0 0 0 1px rgba(0,255,247,.1) inset, 0 24px 80px rgba(255,45,213,.18);
+    text-align:center;
+  }
+  .modal h2{font-family:'Audiowide';font-size:28px;letter-spacing:3px;margin-bottom:8px}
+  .modal h2.win{background:linear-gradient(90deg,var(--lime),var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 0 24px rgba(183,255,0,.3)}
+  .modal h2.lose{color:var(--danger);text-shadow:0 0 18px rgba(255,58,90,.4)}
+  .modal h2.intro{background:linear-gradient(90deg,var(--magenta),var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .modal p{font-size:20px;color:var(--text);margin:12px 0}
+  .modal .big{font-family:'Audiowide';font-size:42px;color:var(--gold);text-shadow:0 0 18px rgba(255,204,0,.45);margin:14px 0}
+  .modal .actions{margin-top:18px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+  .ribbon{margin:10px 0;padding:10px;border-radius:10px;border:1px dashed var(--line);background:rgba(0,0,0,.25);color:var(--ice);font-size:18px}
+
+  /* INFO ROW */
+  .infoRow{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  .infoTag{
+    border:1px solid var(--line);background:rgba(10,2,32,.7);
+    padding:6px 10px;border-radius:8px;font-size:14px;color:var(--muted);
+    font-family:'Press Start 2P', monospace;letter-spacing:1.5px;font-size:8px;
+  }
+  .infoTag b{color:var(--lime);margin-left:6px}
+
+  /* FACT BOX */
+  .factBox{
+    margin-top:12px;padding:12px;border-radius:10px;
+    border:1px dashed var(--lime);color:var(--lime);background:rgba(183,255,0,.06);
+    font-size:20px;text-align:center;display:none;
+  }
+  .factBox.show{display:block;animation:fadeIn .3s ease}
+
+  /* CLAIM REWARDS */
+  .reward{display:inline-block;margin:4px;padding:8px 12px;border-radius:8px;border:1px solid var(--line);background:rgba(10,2,32,.7);color:var(--text);font-size:16px}
+  .reward b{color:var(--gold);margin-left:6px}
+
+  /* RESPONSIVE */
+  @media (max-width:780px){
+    .hud{grid-template-columns:repeat(2,1fr)}
+    .powBar{grid-template-columns:repeat(5,1fr);gap:6px}
+    .pow .name{font-size:6px;letter-spacing:1px}
+    .levelTitle{font-size:22px}
+    .home h1{letter-spacing:4px}
+    .stats .stat{min-width:70px}
+  }
+  @media (max-width:520px){
+    .powBar{grid-template-columns:repeat(5,1fr)}
+    .pow{padding:6px 4px}
+    .pow .icon{font-size:22px}
+  }
+
+  /* Floating toast */
+  .toast{
+    position:fixed;left:50%;top:24px;transform:translateX(-50%);
+    background:rgba(8,1,28,.95);border:1px solid var(--cyan);
+    color:var(--cyan);padding:10px 16px;border-radius:10px;
+    font-family:'Press Start 2P', monospace;font-size:10px;letter-spacing:2px;
+    box-shadow:0 0 24px rgba(0,255,247,.35);
+    z-index:40;display:none;animation:toastIn .25s ease;
+  }
+  .toast.show{display:block}
+  .toast.warn{color:var(--gold);border-color:var(--gold);box-shadow:0 0 24px rgba(255,204,0,.35)}
+  .toast.bad{color:var(--danger);border-color:var(--danger);box-shadow:0 0 24px rgba(255,58,90,.4)}
+  @keyframes toastIn{from{transform:translate(-50%,-10px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
+
+  /* Glitch on level intro */
+  .glitch{position:relative;display:inline-block}
+  .glitch::before,.glitch::after{
+    content:attr(data-text);position:absolute;left:0;top:0;width:100%;overflow:hidden;
+  }
+  .glitch::before{color:var(--cyan);transform:translate(2px,0);clip-path:inset(0 0 60% 0);mix-blend-mode:screen}
+  .glitch::after{color:var(--magenta);transform:translate(-2px,0);clip-path:inset(60% 0 0 0);mix-blend-mode:screen}
+
+  footer.foot{text-align:center;margin-top:24px;color:var(--muted);font-size:14px;letter-spacing:2px}
+  a.link{color:var(--cyan)}
+
+  .restrictList{font-family:'Press Start 2P', monospace;font-size:9px;color:var(--danger);letter-spacing:2px;margin-top:8px;line-height:1.7}
+</style>
+
+
+<div class="toast" id="toast"></div>
+
+<div class="app">
+  <header class="bar">
+    <div class="logo">MIND READER<small>// NEON NUMBER HUNT //</small></div>
+    <div class="stats">
+      <div class="stat"><div class="k">LEVEL</div><div class="v" id="hudLevel">1</div></div>
+      <div class="stat v-gold"><div class="k">POINTS</div><div class="v" id="hudPoints">0</div></div>
+      <div class="stat v-pink"><div class="k">BEST</div><div class="v" id="hudBest">0</div></div>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="panel home">
+      <h1 class="glitch" data-text="MIND READER">MIND READER</h1>
+      <p class="tag">A computer is thinking of a number inside a neon range. Read its mind before the timer fries. Use power-ups, dodge difficulty modifiers, climb the levels.</p>
+      <div class="ctas">
+        <button class="solid" id="btnStart" data-testid="start-game-btn">▶ Start Level 1</button>
+        <button class="magenta" id="btnHow" data-testid="how-to-play-btn">How to Play</button>
+        <button class="lime" id="btnDownload" data-testid="download-game-btn">⤓ Download Game</button>
+        <button class="danger" id="btnReset" data-testid="reset-progress-btn">Reset Progress</button>
+      </div>
+      <div class="infoRow" style="justify-content:center">
+        <div class="infoTag">Current Level <b>1</b></div>
+        <div class="infoTag">Total Points <b>0</b></div>
+        <div class="infoTag">Best Level Score <b>0</b></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">v1.0 — Saved locally. Press <b>R</b> anytime to reset progress.</footer>
+</div>
+
+<!-- MODAL -->
+<div class="modalWrap" id="modalWrap">
+  <div class="modal" id="modal"></div>
+</div>
+
+<script>
+/* =========================================================
+   MIND READER — single-file neon arcade number guessing game
+   ========================================================= */
+
+/* ---------- STORAGE ---------- */
+const STORAGE_KEY = 'mindreader_v1';
+const DEFAULT_STATE = {
+  level: 1,
+  totalPoints: 0,
+  bestScore: 0,
+  powerups: { slicedRange:0, numberFact:0, extraTime:0, pointDoubler:0, freezeTime:0 },
+  unlocked: { slicedRange:false, numberFact:false, extraTime:false, pointDoubler:false, freezeTime:false },
+};
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return structuredClone(DEFAULT_STATE);
+    const s = JSON.parse(raw);
+    return Object.assign(structuredClone(DEFAULT_STATE), s, {
+      powerups: Object.assign({}, DEFAULT_STATE.powerups, s.powerups||{}),
+      unlocked: Object.assign({}, DEFAULT_STATE.unlocked, s.unlocked||{}),
+    });
+  }catch(e){ return structuredClone(DEFAULT_STATE); }
+}
+function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(STATE)); }
+
+let STATE = loadState();
+let GAME = null; // current level runtime
+
+/* ---------- POWERUP META ---------- */
+const POWERUPS = {
+  slicedRange: { name:'SLICED RANGE', icon:'✂', cls:'sliced', desc:'Slices the min/max gap in HALF closer to the target.' },
+  numberFact:  { name:'NUMBER FACT',  icon:'π', cls:'fact',    desc:'Reveals a math fact about the hidden number.' },
+  extraTime:   { name:'EXTRA TIME',   icon:'⏱', cls:'extra',   desc:'Adds up to 15 seconds to the timer.' },
+  pointDoubler:{ name:'POINT DOUBLER',icon:'×2',cls:'doubler', desc:'2× points earned — but timer drains 1.5× faster.' },
+  freezeTime:  { name:'FREEZE TIME',  icon:'❄', cls:'freeze',  desc:'Freeze timer & guesses for 10 seconds.' },
+};
+const POW_ORDER = ['slicedRange','numberFact','extraTime','pointDoubler','freezeTime'];
+
+/* Tutorial unlocks: level => powerup */
+const TUTORIAL_UNLOCKS = { 3:'slicedRange', 6:'numberFact', 9:'extraTime', 12:'pointDoubler', 15:'freezeTime' };
+
+/* Difficulty restrictions */
+const DIFFICULTY = {
+  NORMAL:    { label:'NORMAL',     mult:1.0, restricts:[] },
+  HARD:      { label:'HARD',       mult:1.5, restricts:['numberFact'] },
+  INSANE:    { label:'INSANE',     mult:2.0, restricts:['slicedRange','extraTime','freezeTime'] },
+  GODLY:     { label:'GODLY',      mult:2.5, restricts:['pointDoubler','freezeTime','numberFact'] },
+  DEMON:     { label:'DEMON',      mult:3.0, restricts:['slicedRange','numberFact','pointDoubler','freezeTime'] },
+  ALLSEEING: { label:'ALL-SEEING', mult:4.0, restricts:['slicedRange','numberFact','extraTime','pointDoubler','freezeTime'] },
+};
+
+/* ---------- LEVEL GENERATION ---------- */
+function rngInt(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+function generateRange(level){
+  // Tiered scale: each tier gives a (sizeMin, sizeMax, originMax)
+  const tiers = [
+    { lvl:1,   sizeMin:15,   sizeMax:50,    originMax:30 },
+    { lvl:6,   sizeMin:40,   sizeMax:200,   originMax:150 },
+    { lvl:11,  sizeMin:100,  sizeMax:500,   originMax:600 },
+    { lvl:16,  sizeMin:200,  sizeMax:1200,  originMax:2000 },
+    { lvl:26,  sizeMin:500,  sizeMax:3000,  originMax:5000 },
+    { lvl:41,  sizeMin:1000, sizeMax:6000,  originMax:10000 },
+    { lvl:61,  sizeMin:2000, sizeMax:9000,  originMax:30000 },
+    { lvl:91,  sizeMin:3000, sizeMax:12000, originMax:80000 },
+    { lvl:131, sizeMin:5000, sizeMax:20000, originMax:200000 },
+  ];
+  // Pick the highest tier whose lvl<=current level
+  let tier = tiers[0];
+  for(const t of tiers){ if(level>=t.lvl) tier=t; }
+  // Add randomness: 30% chance jump up a tier, 20% drop one
+  const idx = tiers.indexOf(tier);
+  const r = Math.random();
+  if(r<0.3 && idx<tiers.length-1) tier = tiers[idx+1];
+  else if(r<0.5 && idx>0) tier = tiers[idx-1];
+
+  const size = rngInt(tier.sizeMin, tier.sizeMax);
+  const minVal = rngInt(0, tier.originMax);
+  return { min:minVal, max:minVal+size };
+}
+
+function generateGuesses(){ return rngInt(8,15); }
+function generateTimer(level){
+  // 60s-150s, longer ranges -> a bit more time
+  return rngInt(60, 150);
+}
+
+function pickDifficulty(level){
+  if(level < 36) return 'NORMAL';
+  const baseRoll = Math.min(0.8, (level-35)/120);
+  if(Math.random() > baseRoll) return 'NORMAL';
+  // Weighted pick by tier
+  let pool;
+  if(level < 61)       pool = [['HARD',1]];
+  else if(level < 91)  pool = [['HARD',6],['INSANE',3]];
+  else if(level < 131) pool = [['HARD',5],['INSANE',4],['GODLY',2]];
+  else if(level < 181) pool = [['HARD',4],['INSANE',4],['GODLY',3],['DEMON',2]];
+  else                 pool = [['HARD',3],['INSANE',3],['GODLY',3],['DEMON',3],['ALLSEEING',1]];
+  const total = pool.reduce((a,b)=>a+b[1],0);
+  let r = Math.random()*total;
+  for(const [k,w] of pool){ if((r-=w)<=0) return k; }
+  return 'HARD';
+}
+
+/* ---------- HOT/COLD ---------- */
+function tierForDistance(distance, rangeSize){
+  if(distance===0) return { tier:'BULLSEYE', msg:'YOU FOUND IT' };
+  const pct = distance / rangeSize;
+  if(pct < 0.01) return { tier:'BURNING',   msg:'BURNING! One step away.' };
+  if(pct < 0.03) return { tier:'SCORCHING', msg:'Scorching hot — almost there.' };
+  if(pct < 0.07) return { tier:'HOT',       msg:'Hot — you can feel it.' };
+  if(pct < 0.15) return { tier:'WARM',      msg:'Warm — getting close.' };
+  if(pct < 0.30) return { tier:'COOL',      msg:'Cool — keep narrowing.' };
+  if(pct < 0.55) return { tier:'COLD',      msg:'Cold — way off.' };
+  return { tier:'FREEZING', msg:'Freezing — totally lost.' };
+}
+
+/* ---------- NUMBER FACT ---------- */
+function isPrime(n){
+  if(n<2) return false;
+  if(n<4) return true;
+  if(n%2===0) return false;
+  for(let i=3;i*i<=n;i+=2) if(n%i===0) return false;
+  return true;
+}
+function digitSum(n){ return String(Math.abs(n)).split('').reduce((a,b)=>a+(+b),0); }
+function numberFactFor(n){
+  const facts = [];
+  facts.push(`The hidden number has <b>${String(n).length}</b> digit${String(n).length>1?'s':''}.`);
+  facts.push(`The digits sum to <b>${digitSum(n)}</b>.`);
+  facts.push(`It is <b>${n%2===0?'even':'odd'}</b>.`);
+  facts.push(`${isPrime(n) ? 'It IS a <b>prime</b> number.' : 'It is <b>not prime</b> (composite).'}`);
+  facts.push(`Modulo 7 = <b>${n%7}</b>.`);
+  facts.push(`Modulo 9 = <b>${n%9}</b> (digital root: <b>${((n-1)%9)+1}</b>).`);
+  facts.push(`√n ≈ <b>${Math.sqrt(n).toFixed(2)}</b>.`);
+  facts.push(`Floor(n/10) = <b>${Math.floor(n/10)}</b>.`);
+  facts.push(`Divisible by 3? <b>${n%3===0?'YES':'NO'}</b>. By 5? <b>${n%5===0?'YES':'NO'}</b>.`);
+  return pick(facts);
+}
+
+/* ---------- TOAST ---------- */
+let toastTimer=null;
+function toast(msg, type=''){
+  const t = document.getElementById('toast');
+  t.className = 'toast show ' + type;
+  t.innerHTML = msg;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>{ t.classList.remove('show'); }, 2200);
+}
+
+/* ---------- MODAL ---------- */
+function openModal(html){
+  const w = document.getElementById('modalWrap');
+  const m = document.getElementById('modal');
+  m.innerHTML = html;
+  w.classList.add('show');
+}
+function closeModal(){ document.getElementById('modalWrap').classList.remove('show'); }
+
+/* ---------- HUD ---------- */
+function syncHud(){
+  document.getElementById('hudLevel').textContent = STATE.level;
+  document.getElementById('hudPoints').textContent = STATE.totalPoints.toLocaleString();
+  document.getElementById('hudBest').textContent = STATE.bestScore.toLocaleString();
+}
+
+/* ---------- HOME ---------- */
+function renderHome(){
+  document.getElementById('main').innerHTML = `
+    <section class="panel home">
+      <h1 class="glitch" data-text="MIND READER">MIND READER</h1>
+      <p class="tag">A computer is thinking of a number inside a neon range. Read its mind before the timer fries. Use power-ups, dodge difficulty modifiers, climb the levels.</p>
+      <div class="ctas">
+        <button class="solid" id="btnStart" data-testid="start-game-btn">▶ Start Level ${STATE.level}</button>
+        <button class="magenta" id="btnHow" data-testid="how-to-play-btn">How to Play</button>
+        <button class="lime" id="btnDownload" data-testid="download-game-btn">⤓ Download Game</button>
+        <button class="danger" id="btnReset" data-testid="reset-progress-btn">Reset Progress</button>
+      </div>
+      <div class="infoRow" style="justify-content:center">
+        <div class="infoTag">Current Level <b>${STATE.level}</b></div>
+        <div class="infoTag">Total Points <b>${STATE.totalPoints.toLocaleString()}</b></div>
+        <div class="infoTag">Best Level Score <b>${STATE.bestScore.toLocaleString()}</b></div>
+      </div>
+    </section>
+  `;
+  document.getElementById('btnStart').onclick = startLevelFlow;
+  document.getElementById('btnHow').onclick = showHowTo;
+  document.getElementById('btnDownload').onclick = downloadGame;
+  document.getElementById('btnReset').onclick = ()=>{
+    openModal(`
+      <h2 class="lose">RESET ALL PROGRESS?</h2>
+      <p>This will wipe your level, points, and powerups. Cannot be undone.</p>
+      <div class="actions">
+        <button class="danger" data-testid="confirm-reset-btn" id="confirmReset">Yes, wipe it</button>
+        <button data-testid="cancel-reset-btn" id="cancelReset">Cancel</button>
+      </div>
+    `);
+    document.getElementById('confirmReset').onclick = ()=>{
+      STATE = structuredClone(DEFAULT_STATE); saveState(); syncHud(); closeModal(); renderHome(); toast('PROGRESS WIPED','bad');
+    };
+    document.getElementById('cancelReset').onclick = closeModal;
+  };
+  syncHud();
+}
+
+async function downloadGame(){
+  // Try to fetch the game's own HTML source and trigger a download
+  try{
+    const path = window.location.pathname.endsWith('.html') ? window.location.pathname : '/game.html';
+    const res = await fetch(path, { cache:'no-store' });
+    if(!res.ok) throw new Error('fetch failed');
+    const html = await res.text();
+    const blob = new Blob([html], { type:'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'mind-reader.html';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 1000);
+    toast('SAVED mind-reader.html','');
+  }catch(e){
+    // Fallback: serialize the live document
+    try{
+      const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+      const blob = new Blob([html], { type:'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'mind-reader.html';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url), 1000);
+      toast('SAVED (fallback)','warn');
+    }catch(err){ toast('DOWNLOAD FAILED','bad'); }
+  }
+}
+
+
+function showHowTo(){
+  openModal(`
+    <h2 class="intro">HOW TO PLAY</h2>
+    <div style="text-align:left;font-size:18px;line-height:1.5">
+      <p>• The computer picks a hidden number inside a given <b>min/max range</b>.</p>
+      <p>• You have a limited number of <b>guesses</b> and a <b>timer</b>.</p>
+      <p>• After each guess you get a <b>hot/cold</b> hint and a higher/lower arrow.</p>
+      <p>• Score depends on remaining time, guesses, and the level's difficulty multiplier.</p>
+      <p>• Levels 1–15 are tutorial: every 3rd level unlocks a new power-up.</p>
+      <p>• From level 36+, random difficulty modifiers appear and restrict certain power-ups.</p>
+      <p>• Progress auto-saves in your browser.</p>
+    </div>
+    <div class="actions"><button class="solid" id="closeHow" data-testid="close-how-btn">Got it</button></div>
+  `);
+  document.getElementById('closeHow').onclick = closeModal;
+}
+
+/* ---------- START LEVEL FLOW ---------- */
+function startLevelFlow(){
+  // Generate level
+  const level = STATE.level;
+  const range = generateRange(level);
+  const totalGuesses = generateGuesses();
+  const totalTime = generateTimer(level);
+  const ntg = rngInt(range.min, range.max);
+  const difficulty = pickDifficulty(level);
+  const newUnlock = TUTORIAL_UNLOCKS[level];
+
+  GAME = {
+    level, range, ntg, totalGuesses, guessesLeft: totalGuesses,
+    totalTime, timeLeft: totalTime,
+    difficulty, history: [],
+    currentMin: range.min, currentMax: range.max,
+    doublerActive:false, freezeActive:false, freezeLeft:0,
+    factShown:false, factText:'',
+    tickHandle:null, finished:false, lastTier:null
+  };
+
+  // Tutorial powerup grant on arrival
+  if(newUnlock && !STATE.unlocked[newUnlock]){
+    STATE.unlocked[newUnlock] = true;
+    STATE.powerups[newUnlock] = (STATE.powerups[newUnlock]||0) + 1;
+    saveState();
+    showPowerupIntro(newUnlock, ()=> renderLevel());
+    return;
+  }
+  renderLevel();
+}
+
+function showPowerupIntro(key, cb){
+  const p = POWERUPS[key];
+  openModal(`
+    <h2 class="intro">NEW POWER-UP UNLOCKED</h2>
+    <div class="big">${p.icon} ${p.name}</div>
+    <p>${p.desc}</p>
+    <p class="ribbon">+1 ${p.name} added to your inventory</p>
+    <div class="actions"><button class="solid" id="introOk" data-testid="powerup-intro-ok-btn">Let's go</button></div>
+  `);
+  document.getElementById('introOk').onclick = ()=>{ closeModal(); cb&&cb(); };
+}
+
+/* ---------- RENDER LEVEL ---------- */
+function renderLevel(){
+  const g = GAME;
+  const diff = DIFFICULTY[g.difficulty];
+  const restrictedList = diff.restricts.map(k=>POWERUPS[k].name).join(', ') || 'NONE';
+
+  document.getElementById('main').innerHTML = `
+    <section class="panel">
+      <div class="levelHead">
+        <div>
+          <div class="levelTitle">LEVEL <span class="num glitch" data-text="${g.level}">${g.level}</span></div>
+          <div class="infoRow">
+            <div class="infoTag">Guesses <b>${g.totalGuesses}</b></div>
+            <div class="infoTag">Time <b>${g.totalTime}s</b></div>
+            <div class="infoTag">Range Size <b>${(g.range.max-g.range.min).toLocaleString()}</b></div>
+          </div>
+        </div>
+        <div>
+          <span class="difficulty ${g.difficulty}">${diff.label} ×${diff.mult}</span>
+          ${diff.restricts.length? `<div class="restrictList">RESTRICTS: ${restrictedList}</div>`:''}
+        </div>
+      </div>
+
+      <div class="rangeWrap">
+        <div class="rangeBar">
+          <div class="min" id="rangeMin">${g.currentMin.toLocaleString()}</div>
+          <div class="label">GUESS A NUMBER IN THIS RANGE</div>
+          <div class="max" id="rangeMax">${g.currentMax.toLocaleString()}</div>
+        </div>
+        <div class="rangeMeta">Effective range: <span id="rangeSize">${(g.currentMax-g.currentMin).toLocaleString()}</span> wide</div>
+      </div>
+
+      <div class="hud">
+        <div class="cell guesses"><div class="label">GUESSES</div><div class="value" id="cellGuesses">${g.guessesLeft}</div></div>
+        <div class="cell timer" id="cellTimerWrap"><div class="label">TIME</div><div class="value" id="cellTimer">${g.timeLeft}s</div></div>
+        <div class="cell points"><div class="label">LEVEL SCORE</div><div class="value" id="cellScore">0</div></div>
+        <div class="cell"><div class="label">${g.doublerActive?'DOUBLER':'STREAK'}</div><div class="value" id="cellStreak">${g.doublerActive?'×2':'—'}</div></div>
+      </div>
+
+      <div class="guessRow">
+        <input type="number" id="guessInput" placeholder="Enter your guess…" data-testid="guess-input" />
+        <button class="solid" id="btnGuess" data-testid="submit-guess-btn">SUBMIT</button>
+        <button class="danger" id="btnQuit" data-testid="quit-level-btn">QUIT</button>
+      </div>
+
+      <div class="hint" id="hintBox">
+        <div class="hintTier IDLE" id="hintTier">AWAITING FIRST GUESS</div>
+        <div class="hintMsg" id="hintMsg">Type a number between ${g.currentMin.toLocaleString()} and ${g.currentMax.toLocaleString()}.</div>
+      </div>
+
+      <div class="factBox" id="factBox"></div>
+
+      <div class="history" id="history"></div>
+
+      <div class="powBar" id="powBar"></div>
+    </section>
+  `;
+
+  renderPowBar();
+
+  document.getElementById('btnGuess').onclick = submitGuess;
+  document.getElementById('btnQuit').onclick = quitLevel;
+  const inp = document.getElementById('guessInput');
+  inp.focus();
+  inp.addEventListener('keydown', e=>{ if(e.key==='Enter') submitGuess(); });
+
+  startTimer();
+  syncHud();
+}
+
+function renderPowBar(){
+  const g = GAME;
+  const restricted = new Set(DIFFICULTY[g.difficulty].restricts);
+  const html = POW_ORDER.map(key=>{
+    const p = POWERUPS[key];
+    const owned = STATE.powerups[key]||0;
+    const unlocked = STATE.unlocked[key];
+    const isRestricted = restricted.has(key);
+    const cls = ['pow', p.cls];
+    if(!unlocked) cls.push('locked');
+    if(isRestricted) cls.push('restricted');
+    return `
+      <div class="${cls.join(' ')}" data-key="${key}" data-testid="pow-${key}" title="${p.desc}">
+        ${isRestricted?'<div class="badge">BLOCKED</div>':''}
+        <div class="icon">${p.icon}</div>
+        <div class="name">${p.name}</div>
+        <div class="count">×${owned}</div>
+      </div>
+    `;
+  }).join('');
+  const bar = document.getElementById('powBar');
+  bar.innerHTML = html;
+  bar.querySelectorAll('.pow').forEach(el=>{
+    el.onclick = ()=> usePowerup(el.dataset.key);
+  });
+}
+
+/* ---------- TIMER ---------- */
+function startTimer(){
+  const g = GAME;
+  if(g.tickHandle) clearInterval(g.tickHandle);
+  g.tickHandle = setInterval(()=>{
+    if(g.finished) return;
+    if(g.freezeActive){
+      g.freezeLeft -= 1;
+      if(g.freezeLeft<=0){ g.freezeActive=false; toast('FREEZE OVER',''); }
+      updateTimerUI();
+      return;
+    }
+    const drain = g.doublerActive ? 1.5 : 1;
+    g.timeLeft = Math.max(0, +(g.timeLeft - drain).toFixed(1));
+    updateTimerUI();
+    if(g.timeLeft<=0){
+      endLevel(false, 'TIME RAN OUT');
+    }
+  }, 1000);
+}
+function updateTimerUI(){
+  const g = GAME;
+  const t = document.getElementById('cellTimer');
+  const w = document.getElementById('cellTimerWrap');
+  if(!t) return;
+  t.textContent = (g.freezeActive ? `❄ ${Math.ceil(g.timeLeft)}s` : `${Math.ceil(g.timeLeft)}s`);
+  w.classList.toggle('frozen', g.freezeActive);
+  w.classList.toggle('danger', !g.freezeActive && g.timeLeft<=10);
+}
+
+/* ---------- POINTS ---------- */
+function currentLevelScore(){
+  const g = GAME;
+  const diff = DIFFICULTY[g.difficulty];
+  const base = 100 * g.level;
+  const timeBonus = Math.round((g.timeLeft / g.totalTime) * 200 * g.level);
+  const guessBonus = g.guessesLeft * 50;
+  let total = base + timeBonus + guessBonus;
+  total = Math.round(total * diff.mult);
+  if(g.doublerActive) total *= 2;
+  return total;
+}
+function previewScoreUI(){
+  const el = document.getElementById('cellScore');
+  if(el) el.textContent = currentLevelScore().toLocaleString();
+}
+
+/* ---------- GUESS ---------- */
+function submitGuess(){
+  const g = GAME;
+  if(g.finished) return;
+  const inp = document.getElementById('guessInput');
+  const raw = inp.value.trim();
+  if(raw==='') { toast('ENTER A NUMBER','warn'); return; }
+  const n = parseInt(raw,10);
+  if(!Number.isFinite(n)) { toast('INVALID NUMBER','bad'); return; }
+  if(n < g.currentMin || n > g.currentMax){
+    toast(`OUT OF RANGE (${g.currentMin}–${g.currentMax})`,'bad');
+    return;
+  }
+
+  if(!g.freezeActive){
+    g.guessesLeft -= 1;
+  }
+  const dist = Math.abs(n - g.ntg);
+  const tier = tierForDistance(dist, (g.range.max - g.range.min));
+  const dir = n < g.ntg ? 'up' : (n > g.ntg ? 'down' : 'eq');
+  g.history.push({ n, dist, tier:tier.tier, dir });
+  g.lastTier = tier.tier;
+
+  inp.value='';
+  updateGuessUI();
+
+  if(n === g.ntg){
+    endLevel(true, 'BULLSEYE');
+    return;
+  }
+  if(g.guessesLeft <= 0){
+    endLevel(false, 'OUT OF GUESSES');
+    return;
+  }
+  inp.focus();
+}
+function updateGuessUI(){
+  const g = GAME;
+  document.getElementById('cellGuesses').textContent = g.guessesLeft;
+  document.getElementById('rangeMin').textContent = g.currentMin.toLocaleString();
+  document.getElementById('rangeMax').textContent = g.currentMax.toLocaleString();
+  document.getElementById('rangeSize').textContent = (g.currentMax-g.currentMin).toLocaleString();
+
+  const last = g.history[g.history.length-1];
+  if(last){
+    const ht = document.getElementById('hintTier');
+    const hm = document.getElementById('hintMsg');
+    const tInfo = tierForDistance(last.dist, (g.range.max - g.range.min));
+    ht.className = 'hintTier ' + tInfo.tier;
+    ht.textContent = tInfo.tier;
+    const arrow = last.dir==='up' ? '↑ GO HIGHER' : (last.dir==='down' ? '↓ GO LOWER' : '');
+    hm.innerHTML = `${tInfo.msg} ${arrow ? `<b style="color:${last.dir==='up'?'var(--lime)':'var(--pink)'}">${arrow}</b>` : ''}`;
+  }
+
+  const hh = document.getElementById('history');
+  hh.innerHTML = g.history.map(h=>{
+    const arrow = h.dir==='up' ? '↑' : (h.dir==='down' ? '↓' : '=');
+    const arrowCls = h.dir==='up' ? 'up' : (h.dir==='down' ? 'down' : '');
+    return `<span class="chip">${h.n.toLocaleString()} <span class="arrow ${arrowCls}">${arrow}</span></span>`;
+  }).join('');
+
+  previewScoreUI();
+}
+
+/* ---------- POWERUP USE ---------- */
+function usePowerup(key){
+  const g = GAME;
+  if(!g || g.finished) return;
+  if(!STATE.unlocked[key]) { toast('POWER-UP LOCKED','warn'); return; }
+  if(STATE.powerups[key] <= 0) { toast('NONE LEFT','warn'); return; }
+  if(DIFFICULTY[g.difficulty].restricts.includes(key)) { toast('BLOCKED BY DIFFICULTY','bad'); return; }
+
+  STATE.powerups[key] -= 1; saveState();
+
+  if(key==='slicedRange'){
+    // Halve the gap closer to the NTG
+    g.currentMin = Math.round((g.currentMin + g.ntg) / 2);
+    g.currentMax = Math.round((g.currentMax + g.ntg) / 2);
+    if(g.currentMin > g.ntg) g.currentMin = g.ntg;
+    if(g.currentMax < g.ntg) g.currentMax = g.ntg;
+    toast('RANGE SLICED ✂','');
+  } else if(key==='numberFact'){
+    g.factText = numberFactFor(g.ntg);
+    g.factShown = true;
+    const fb = document.getElementById('factBox');
+    fb.innerHTML = `<b>FACT:</b> ${g.factText}`;
+    fb.classList.add('show');
+    toast('FACT REVEALED π','');
+  } else if(key==='extraTime'){
+    const add = rngInt(8,15);
+    g.timeLeft += add;
+    g.totalTime += add;
+    toast(`+${add}s TIME ⏱`,'');
+  } else if(key==='pointDoubler'){
+    g.doublerActive = true;
+    toast('POINTS DOUBLED ×2 (TIMER 1.5×)','');
+  } else if(key==='freezeTime'){
+    g.freezeActive = true;
+    g.freezeLeft = 10;
+    toast('TIME FROZEN ❄ 10s','');
+  }
+  renderPowBar();
+  updateGuessUI();
+  updateTimerUI();
+  syncHud();
+}
+
+/* ---------- END LEVEL ---------- */
+function quitLevel(){
+  if(!GAME || GAME.finished) return;
+  openModal(`
+    <h2 class="lose">QUIT LEVEL?</h2>
+    <p>You'll lose progress for this level (no points earned).</p>
+    <div class="actions">
+      <button class="danger" id="confirmQuit" data-testid="confirm-quit-btn">Quit</button>
+      <button id="cancelQuit" data-testid="cancel-quit-btn">Keep Playing</button>
+    </div>
+  `);
+  document.getElementById('confirmQuit').onclick = ()=>{
+    closeModal();
+    if(GAME && GAME.tickHandle) clearInterval(GAME.tickHandle);
+    GAME = null;
+    renderHome();
+  };
+  document.getElementById('cancelQuit').onclick = closeModal;
+}
+
+function rewardOnWin(level){
+  // Tutorial bonuses already given by introduction. Add gameplay rewards:
+  const rewards = {};
+  if(level >= 15){
+    const eligible = POW_ORDER.filter(k=>STATE.unlocked[k]);
+    // Earn 1 random powerup; every 5th level earn 2; every 10th earn 3
+    const count = (level % 10 === 0) ? 3 : (level % 5 === 0 ? 2 : 1);
+    for(let i=0;i<count;i++){
+      const k = pick(eligible);
+      STATE.powerups[k] = (STATE.powerups[k]||0)+1;
+      rewards[k] = (rewards[k]||0)+1;
+    }
+  } else {
+    // Small bonus during tutorial: at 5, 8, 11, 14 grant 1 random unlocked
+    if([5,8,11,14].includes(level)){
+      const eligible = POW_ORDER.filter(k=>STATE.unlocked[k]);
+      if(eligible.length){
+        const k = pick(eligible);
+        STATE.powerups[k] = (STATE.powerups[k]||0)+1;
+        rewards[k] = 1;
+      }
+    }
+  }
+  return rewards;
+}
+
+function endLevel(win, reason){
+  const g = GAME;
+  if(g.finished) return;
+  g.finished = true;
+  if(g.tickHandle) clearInterval(g.tickHandle);
+
+  if(win){
+    const score = currentLevelScore();
+    STATE.totalPoints += score;
+    if(score > STATE.bestScore) STATE.bestScore = score;
+    const rewards = rewardOnWin(g.level);
+    STATE.level += 1;
+    saveState();
+    syncHud();
+    const rewardHtml = Object.keys(rewards).length
+      ? `<div class="ribbon">EARNED: ${Object.entries(rewards).map(([k,v])=>`<span class="reward">${POWERUPS[k].icon} ${POWERUPS[k].name}<b>×${v}</b></span>`).join(' ')}</div>`
+      : '';
+    openModal(`
+      <h2 class="win">${reason}!</h2>
+      <p>The number was <b style="color:var(--cyan)">${g.ntg.toLocaleString()}</b></p>
+      <div class="big">+${score.toLocaleString()} pts</div>
+      <p>Difficulty <b style="color:var(--gold)">${DIFFICULTY[g.difficulty].label}</b> × ${DIFFICULTY[g.difficulty].mult}</p>
+      <p>Guesses used: <b>${g.totalGuesses - g.guessesLeft}</b> / ${g.totalGuesses} &nbsp; Time left: <b>${Math.ceil(g.timeLeft)}s</b></p>
+      ${rewardHtml}
+      <div class="actions">
+        <button class="solid" id="btnNext" data-testid="next-level-btn">Next Level ▶</button>
+        <button id="btnHome" data-testid="back-home-btn">Home</button>
+      </div>
+    `);
+    document.getElementById('btnNext').onclick = ()=>{ closeModal(); startLevelFlow(); };
+    document.getElementById('btnHome').onclick = ()=>{ closeModal(); renderHome(); };
+  } else {
+    openModal(`
+      <h2 class="lose">${reason}</h2>
+      <p>The number was <b style="color:var(--cyan)">${g.ntg.toLocaleString()}</b></p>
+      <p>Range was <b>${g.range.min.toLocaleString()} – ${g.range.max.toLocaleString()}</b></p>
+      <p>Difficulty <b>${DIFFICULTY[g.difficulty].label}</b></p>
+      <div class="actions">
+        <button class="solid" id="btnRetry" data-testid="retry-level-btn">Retry Level ${g.level}</button>
+        <button id="btnHomeL" data-testid="lose-home-btn">Home</button>
+      </div>
+    `);
+    document.getElementById('btnRetry').onclick = ()=>{ closeModal(); startLevelFlow(); };
+    document.getElementById('btnHomeL').onclick = ()=>{ closeModal(); renderHome(); };
+  }
+}
+
+/* ---------- INPUT: Reset shortcut ---------- */
+document.addEventListener('keydown', e=>{
+  if(e.key==='r' || e.key==='R'){
+    // only when not typing in input
+    const active = document.activeElement;
+    if(active && active.tagName==='INPUT') return;
+    if(!confirm('Reset all progress?')) return;
+    STATE = structuredClone(DEFAULT_STATE); saveState(); syncHud(); renderHome(); toast('PROGRESS WIPED','bad');
+  }
+});
+
+/* ---------- BOOT ---------- */
+syncHud();
+renderHome();
+</script>
+
+
+
+  
+  
+
+
+</body></html>
